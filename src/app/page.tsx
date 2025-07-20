@@ -30,7 +30,7 @@ export default function Home() {
       } else {
         setError(data.error || 'ログインに失敗しました');
       }
-    } catch (err) {
+    } catch {
       setError('ネットワークエラーが発生しました');
     } finally {
       setIsLoading(false);
