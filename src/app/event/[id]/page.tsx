@@ -99,13 +99,13 @@ export default function EventPage({ params }: EventPageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:py-6 gap-3 sm:gap-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               イベント詳細
             </h1>
             <Link
               href="/dashboard"
-              className="text-blue-600 hover:text-blue-800 underline"
+              className="text-blue-600 hover:text-blue-800 underline text-sm sm:text-base"
             >
               ← ダッシュボードに戻る
             </Link>
@@ -113,49 +113,49 @@ export default function EventPage({ params }: EventPageProps) {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-4xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="py-4 sm:py-6">
           <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-8">
+            <div className="px-4 sm:px-6 py-6 sm:py-8">
               {/* タイトルと基本情報 */}
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <div className="mb-6 sm:mb-8">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 leading-tight">
                   {event.title}
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
                       参加日
                     </h3>
-                    <p className="text-lg text-gray-900">
+                    <p className="text-base sm:text-lg text-gray-900">
                       {event.participationDate}
                     </p>
                   </div>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
                       団体
                     </h3>
-                    <p className="text-lg text-gray-900">
+                    <p className="text-base sm:text-lg text-gray-900">
                       {event.organization}
                     </p>
                   </div>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg sm:col-span-2">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
                       形式
                     </h3>
-                    <p className="text-lg text-gray-900">
+                    <p className="text-base sm:text-lg text-gray-900">
                       {event.format}
                     </p>
                   </div>
                   
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg sm:col-span-2">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">
                       記録日時
                     </h3>
-                    <p className="text-lg text-gray-900">
+                    <p className="text-base sm:text-lg text-gray-900">
                       {event.timestamp}
                     </p>
                   </div>
@@ -164,12 +164,12 @@ export default function EventPage({ params }: EventPageProps) {
 
               {/* ストーリー */}
               {event.story && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
                     ストーリー
                   </h3>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-gray-800 whitespace-pre-wrap">
+                  <div className="bg-blue-50 p-3 sm:p-4 rounded-lg">
+                    <p className="text-sm sm:text-base text-gray-800 whitespace-pre-wrap leading-relaxed">
                       {event.story}
                     </p>
                   </div>
@@ -178,12 +178,12 @@ export default function EventPage({ params }: EventPageProps) {
 
               {/* 印象的なこと */}
               {event.memorableThings && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
                     印象的なこと
                   </h3>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <p className="text-gray-800 whitespace-pre-wrap">
+                  <div className="bg-green-50 p-3 sm:p-4 rounded-lg">
+                    <p className="text-sm sm:text-base text-gray-800 whitespace-pre-wrap leading-relaxed">
                       {event.memorableThings}
                     </p>
                   </div>
@@ -192,12 +192,12 @@ export default function EventPage({ params }: EventPageProps) {
 
               {/* ラス謎 */}
               {event.finalMystery && (
-                <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <div className="mb-6 sm:mb-8">
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">
                     ラス謎
                   </h3>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <p className="text-gray-800 whitespace-pre-wrap">
+                  <div className="bg-purple-50 p-3 sm:p-4 rounded-lg">
+                    <p className="text-sm sm:text-base text-gray-800 whitespace-pre-wrap leading-relaxed">
                       {event.finalMystery}
                     </p>
                   </div>
@@ -205,8 +205,8 @@ export default function EventPage({ params }: EventPageProps) {
               )}
 
               {/* フッターアクション */}
-              <div className="border-t pt-6 mt-8">
-                <div className="flex justify-between">
+              <div className="border-t pt-4 sm:pt-6 mt-6 sm:mt-8">
+                <div className="flex justify-center sm:justify-between">
                   <Link
                     href="/dashboard"
                     className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

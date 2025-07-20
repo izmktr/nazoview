@@ -116,13 +116,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <h1 className="text-3xl font-bold text-gray-900">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 sm:py-6 gap-3 sm:gap-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               謎解きイベント記録
             </h1>
             <button
               onClick={handleLogout}
-              className="text-sm text-gray-600 hover:text-gray-900"
+              className="text-sm text-gray-600 hover:text-gray-900 self-end sm:self-auto"
             >
               ログアウト
             </button>
@@ -130,20 +130,20 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="py-4 sm:py-6">
           {/* フィルターとサーチ */}
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-4 sm:mb-6">
             {/* 選択された組織の表示 */}
             {selectedOrganization && (
               <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="text-sm text-blue-800">
                     団体フィルタ: <strong>{selectedOrganization}</strong>
                   </span>
                   <button
                     onClick={() => setSelectedOrganization('')}
-                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                    className="text-blue-600 hover:text-blue-800 text-sm underline self-start sm:self-auto"
                   >
                     解除
                   </button>
@@ -151,16 +151,16 @@ export default function Dashboard() {
               </div>
             )}
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* 形式フィルター */}
-              <div>
+              <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   形式で絞り込み
                 </label>
                 <select
                   value={selectedFormat}
                   onChange={(e) => setSelectedFormat(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
                 >
                   <option value="">全て</option>
                   {uniqueFormats.map((format) => (
@@ -172,7 +172,7 @@ export default function Dashboard() {
               </div>
 
               {/* テキスト検索 */}
-              <div>
+              <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   タイトル・団体名検索
                 </label>
@@ -182,12 +182,12 @@ export default function Dashboard() {
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                    className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
                     placeholder="検索キーワード"
                   />
                   <button
                     onClick={handleSearch}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     title="検索"
                   >
                     <MagnifyingGlassIcon className="h-5 w-5" />
@@ -196,7 +196,7 @@ export default function Dashboard() {
               </div>
 
               {/* 内容検索 */}
-              <div>
+              <div className="sm:col-span-2 lg:col-span-1">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   内容検索
                 </label>
@@ -206,12 +206,12 @@ export default function Dashboard() {
                     value={contentSearch}
                     onChange={(e) => setContentSearch(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleContentSearch()}
-                    className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
                     placeholder="ストーリー・印象等"
                   />
                   <button
                     onClick={handleContentSearch}
-                    className="px-4 py-2 bg-green-600 text-white rounded-r-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-r-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
                     title="内容検索"
                   >
                     <MagnifyingGlassIcon className="h-5 w-5" />
@@ -220,7 +220,7 @@ export default function Dashboard() {
               </div>
 
               {/* リセット */}
-              <div className="flex items-end">
+              <div className="sm:col-span-2 lg:col-span-1 flex items-end">
                 <button
                   onClick={() => {
                     setSelectedFormat('');
@@ -231,7 +231,7 @@ export default function Dashboard() {
                     setActiveContentSearch('');
                     setCurrentPage(1);
                   }}
-                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-base sm:text-sm"
                 >
                   リセット
                 </button>
@@ -241,13 +241,14 @@ export default function Dashboard() {
 
           {/* 結果表示 */}
           <div className="bg-white shadow rounded-lg">
-            <div className="px-6 py-4 border-b border-gray-200">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">
                 イベント一覧 ({totalItems}件)
               </h2>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* デスクトップ用テーブル */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -296,10 +297,42 @@ export default function Dashboard() {
               </table>
             </div>
 
+            {/* モバイル用カードレイアウト */}
+            <div className="sm:hidden divide-y divide-gray-200">
+              {events.map((event, index) => (
+                <div key={index} className="p-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start">
+                      <Link
+                        href={`/event/${event.originalIndex ?? index}`}
+                        className="text-blue-600 hover:text-blue-900 hover:underline font-medium text-sm line-clamp-2"
+                      >
+                        {event.title}
+                      </Link>
+                      <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
+                        {event.participationDate}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => handleOrganizationClick(event.organization)}
+                        className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200"
+                      >
+                        {event.organization}
+                      </button>
+                      <span className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                        {event.format}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* ページネーション */}
             {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
+              <div className="px-4 sm:px-6 py-4 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
                   <div className="text-sm text-gray-700">
                     ページ {currentPage} / {totalPages}
                   </div>
@@ -307,14 +340,14 @@ export default function Dashboard() {
                     <button
                       onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                     >
                       前へ
                     </button>
                     <button
                       onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                     >
                       次へ
                     </button>
