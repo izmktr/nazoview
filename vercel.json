@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "APP_PASSWORD": "@app_password",
+    "GOOGLE_SHEETS_API_KEY": "@google_sheets_api_key",
+    "GOOGLE_SHEET_ID": "@google_sheet_id",
+    "NEXTAUTH_SECRET": "@nextauth_secret"
+  }
+}
