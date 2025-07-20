@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { EventData } from '@/types';
 
 interface EventsResponse {
@@ -26,16 +27,22 @@ export default function Dashboard() {
   
   // フィルター状態
   const [selectedFormat, setSelectedFormat] = useState('');
+  const [selectedOrganization, setSelectedOrganization] = useState('');
   const [searchText, setSearchText] = useState('');
   const [contentSearch, setContentSearch] = useState('');
+  
+  // 実際に検索に使用する状態（ボタンを押したときのみ更新）
+  const [activeSearchText, setActiveSearchText] = useState('');
+  const [activeContentSearch, setActiveContentSearch] = useState('');
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (selectedFormat) params.append('format', selectedFormat);
-      if (searchText) params.append('searchText', searchText);
-      if (contentSearch) params.append('contentSearch', contentSearch);
+      if (selectedOrganization) params.append('organization', selectedOrganization);
+      if (activeSearchText) params.append('searchText', activeSearchText);
+      if (activeContentSearch) params.append('contentSearch', activeContentSearch);
       params.append('page', currentPage.toString());
 
       const response = await fetch(`/api/events?${params}`);
@@ -58,7 +65,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedFormat, searchText, contentSearch, router]);
+  }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, router]);
 
   useEffect(() => {
     fetchEvents();
@@ -66,23 +73,22 @@ export default function Dashboard() {
 
   const handleSearch = () => {
     setCurrentPage(1);
-    fetchEvents();
+    setActiveSearchText(searchText);
   };
 
   const handleContentSearch = () => {
     setCurrentPage(1);
-    fetchEvents();
+    setActiveContentSearch(contentSearch);
   };
 
   const handleOrganizationClick = (organization: string) => {
     setSelectedFormat('');
+    setSelectedOrganization(organization);
     setSearchText('');
     setContentSearch('');
-    // 団体名での絞り込みを実装
-    const params = new URLSearchParams();
-    params.append('organization', organization);
-    params.append('page', '1');
-    router.push(`/dashboard?${params}`);
+    setActiveSearchText('');
+    setActiveContentSearch('');
+    setCurrentPage(1);
   };
 
   const handleLogout = async () => {
@@ -128,6 +134,23 @@ export default function Dashboard() {
         <div className="px-4 py-6 sm:px-0">
           {/* フィルターとサーチ */}
           <div className="bg-white p-6 rounded-lg shadow mb-6">
+            {/* 選択された組織の表示 */}
+            {selectedOrganization && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-blue-800">
+                    団体フィルタ: <strong>{selectedOrganization}</strong>
+                  </span>
+                  <button
+                    onClick={() => setSelectedOrganization('')}
+                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                  >
+                    解除
+                  </button>
+                </div>
+              </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* 形式フィルター */}
               <div>
@@ -158,14 +181,16 @@ export default function Dashboard() {
                     type="text"
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="検索キーワード"
                   />
                   <button
                     onClick={handleSearch}
                     className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    title="検索"
                   >
-                    検索
+                    <MagnifyingGlassIcon className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -180,14 +205,16 @@ export default function Dashboard() {
                     type="text"
                     value={contentSearch}
                     onChange={(e) => setContentSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleContentSearch()}
                     className="flex-1 border border-gray-300 rounded-l-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                     placeholder="ストーリー・印象等"
                   />
                   <button
                     onClick={handleContentSearch}
                     className="px-4 py-2 bg-green-600 text-white rounded-r-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    title="内容検索"
                   >
-                    検索
+                    <MagnifyingGlassIcon className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -197,8 +224,11 @@ export default function Dashboard() {
                 <button
                   onClick={() => {
                     setSelectedFormat('');
+                    setSelectedOrganization('');
                     setSearchText('');
                     setContentSearch('');
+                    setActiveSearchText('');
+                    setActiveContentSearch('');
                     setCurrentPage(1);
                   }}
                   className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -222,7 +252,7 @@ export default function Dashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      参加日
+                      参加日 ↓
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       タイトル
@@ -243,7 +273,7 @@ export default function Dashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <Link
-                          href={`/event/${index}`}
+                          href={`/event/${event.originalIndex ?? index}`}
                           className="text-sm text-blue-600 hover:text-blue-900 hover:underline"
                         >
                           {event.title}

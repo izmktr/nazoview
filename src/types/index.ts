@@ -7,6 +7,7 @@ export interface EventData {
   story: string;
   memorableThings: string;
   finalMystery: string;
+  originalIndex?: number; // 元の配列でのインデックス
 }
 
 export interface FilterParams {
