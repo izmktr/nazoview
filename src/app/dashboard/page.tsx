@@ -81,6 +81,11 @@ export default function Dashboard() {
     setActiveContentSearch(contentSearch);
   };
 
+  const handleFormatChange = (format: string) => {
+    setSelectedFormat(format);
+    setCurrentPage(1);
+  };
+
   const handleOrganizationClick = (organization: string) => {
     setSelectedFormat('');
     setSelectedOrganization(organization);
@@ -159,7 +164,7 @@ export default function Dashboard() {
                 </label>
                 <select
                   value={selectedFormat}
-                  onChange={(e) => setSelectedFormat(e.target.value)}
+                  onChange={(e) => handleFormatChange(e.target.value)}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
                 >
                   <option value="">全て</option>
