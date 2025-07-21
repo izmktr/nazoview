@@ -1,13 +1,45 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rememberPassword, setRememberPassword] = useState(false);
   const router = useRouter();
+
+  // コンポーネントマウント時に保存されたパスワードを読み込み
+  useEffect(() => {
+    const savedPassword = localStorage.getItem('nazoview_password');
+    const passwordExpiry = localStorage.getItem('nazoview_password_expiry');
+    
+    if (savedPassword && passwordExpiry) {
+      const now = new Date().getTime();
+      if (now < parseInt(passwordExpiry)) {
+        setPassword(savedPassword);
+        setRememberPassword(true);
+      } else {
+        // 期限切れの場合は削除
+        localStorage.removeItem('nazoview_password');
+        localStorage.removeItem('nazoview_password_expiry');
+      }
+    }
+  }, []);
+
+  // パスワード変更時の処理
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+    
+    // パスワードが手動でクリアされた場合、記憶設定もリセット
+    if (newPassword === '' && rememberPassword) {
+      setRememberPassword(false);
+      localStorage.removeItem('nazoview_password');
+      localStorage.removeItem('nazoview_password_expiry');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +58,17 @@ export default function Home() {
       const data = await response.json();
 
       if (response.ok) {
+        // ログイン成功時にパスワードを記憶する設定の場合は保存
+        if (rememberPassword) {
+          const expiryTime = new Date().getTime() + (7 * 24 * 60 * 60 * 1000); // 7日間
+          localStorage.setItem('nazoview_password', password);
+          localStorage.setItem('nazoview_password_expiry', expiryTime.toString());
+        } else {
+          // チェックボックスがオフの場合は保存されたパスワードを削除
+          localStorage.removeItem('nazoview_password');
+          localStorage.removeItem('nazoview_password_expiry');
+        }
+        
         router.push('/dashboard');
       } else {
         setError(data.error || 'ログインに失敗しました');
@@ -58,11 +101,25 @@ export default function Home() {
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               placeholder="パスワードを入力してください"
               className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
               required
             />
+          </div>
+
+          {/* パスワード記憶チェックボックス */}
+          <div className="flex items-center">
+            <input
+              id="remember-password"
+              type="checkbox"
+              checked={rememberPassword}
+              onChange={(e) => setRememberPassword(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <label htmlFor="remember-password" className="ml-2 block text-sm text-gray-700">
+              パスワードを7日間記憶する
+            </label>
           </div>
 
           {error && (

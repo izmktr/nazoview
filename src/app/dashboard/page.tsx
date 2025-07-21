@@ -97,7 +97,13 @@ export default function Dashboard() {
   };
 
   const handleLogout = async () => {
+    // 認証Cookieを削除
     document.cookie = 'authenticated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    
+    // 保存されたパスワードも削除（オプション）
+    // localStorage.removeItem('nazoview_password');
+    // localStorage.removeItem('nazoview_password_expiry');
+    
     router.push('/');
   };
 
