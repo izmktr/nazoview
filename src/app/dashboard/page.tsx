@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { EventData } from '@/types';
@@ -14,8 +14,9 @@ interface EventsResponse {
   uniqueFormats: string[];
 }
 
-export default function Dashboard() {
+function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,9 @@ export default function Dashboard() {
   // 実際に検索に使用する状態（ボタンを押したときのみ更新）
   const [activeSearchText, setActiveSearchText] = useState('');
   const [activeContentSearch, setActiveContentSearch] = useState('');
+  
+  // URLパラメータから初期値を設定するフラグ
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -67,9 +71,23 @@ export default function Dashboard() {
     }
   }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, router]);
 
+  // 初期化とURLパラメータ処理
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    if (!isInitialized) {
+      const organization = searchParams.get('organization');
+      if (organization) {
+        setSelectedOrganization(decodeURIComponent(organization));
+      }
+      setIsInitialized(true);
+    }
+  }, [searchParams, isInitialized]);
+
+  useEffect(() => {
+    // 初期化が完了してからデータを取得
+    if (isInitialized) {
+      fetchEvents();
+    }
+  }, [fetchEvents, isInitialized]);
 
   const handleSearch = () => {
     setCurrentPage(1);
@@ -131,12 +149,20 @@ export default function Dashboard() {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               謎解きイベント記録
             </h1>
-            <button
-              onClick={handleLogout}
-              className="text-sm text-gray-600 hover:text-gray-900 self-end sm:self-auto"
-            >
-              ログアウト
-            </button>
+            <div className="flex items-center gap-4 self-end sm:self-auto">
+              <Link
+                href="/organizations"
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                団体別公演数
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                ログアウト
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -241,6 +267,8 @@ export default function Dashboard() {
                     setActiveSearchText('');
                     setActiveContentSearch('');
                     setCurrentPage(1);
+                    // URLパラメータもクリア
+                    router.push('/dashboard');
                   }}
                   className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-base sm:text-sm"
                 >
@@ -370,5 +398,17 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">読み込み中...</div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { NextRequest } from 'next/server';
 
 export function validatePassword(inputPassword: string): boolean {
   const correctPassword = process.env.APP_PASSWORD;
@@ -17,4 +18,10 @@ export function hashPassword(password: string): string {
 
 export function comparePassword(inputPassword: string, hashedPassword: string): boolean {
   return bcrypt.compareSync(inputPassword, hashedPassword);
+}
+
+export function isAuthenticated(request: NextRequest): boolean {
+  const cookies = request.cookies;
+  const authenticated = cookies.get('authenticated');
+  return authenticated?.value === 'true';
 }

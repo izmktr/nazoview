@@ -62,7 +62,7 @@ export default function Home() {
         localStorage.removeItem('nazoview_password_expiry');
       }
     }
-  }, [router]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // パスワード変更時の処理
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
