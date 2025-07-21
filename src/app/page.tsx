@@ -7,8 +7,41 @@ export default function Home() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isAutoLogging, setIsAutoLogging] = useState(false);
   const [rememberPassword, setRememberPassword] = useState(false);
   const router = useRouter();
+
+  // 自動ログインを試行する関数
+  const tryAutoLogin = async (savedPassword: string) => {
+    setIsAutoLogging(true);
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: savedPassword }),
+      });
+
+      if (response.ok) {
+        // 自動ログイン成功
+        router.push('/dashboard');
+        return true;
+      } else {
+        // パスワードが無効になった場合は保存されたパスワードを削除
+        localStorage.removeItem('nazoview_password');
+        localStorage.removeItem('nazoview_password_expiry');
+        setPassword('');
+        setRememberPassword(false);
+        return false;
+      }
+    } catch {
+      // ネットワークエラーの場合は自動ログインをスキップ
+      return false;
+    } finally {
+      setIsAutoLogging(false);
+    }
+  };
 
   // コンポーネントマウント時に保存されたパスワードを読み込み
   useEffect(() => {
@@ -20,13 +53,16 @@ export default function Home() {
       if (now < parseInt(passwordExpiry)) {
         setPassword(savedPassword);
         setRememberPassword(true);
+        
+        // 保存されたパスワードで自動ログインを試行
+        tryAutoLogin(savedPassword);
       } else {
         // 期限切れの場合は削除
         localStorage.removeItem('nazoview_password');
         localStorage.removeItem('nazoview_password_expiry');
       }
     }
-  }, []);
+  }, [router]);
 
   // パスワード変更時の処理
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,7 +124,7 @@ export default function Home() {
             謎解きイベント記録
           </h1>
           <p className="text-sm sm:text-base text-gray-600">
-            ログインしてイベント記録を閲覧してください
+            {isAutoLogging ? '自動ログイン中...' : 'ログインしてイベント記録を閲覧してください'}
           </p>
         </div>
 
@@ -104,6 +140,7 @@ export default function Home() {
               onChange={handlePasswordChange}
               placeholder="パスワードを入力してください"
               className="w-full px-3 py-3 sm:py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-base sm:text-sm"
+              disabled={isAutoLogging}
               required
             />
           </div>
@@ -116,6 +153,7 @@ export default function Home() {
               checked={rememberPassword}
               onChange={(e) => setRememberPassword(e.target.checked)}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              disabled={isAutoLogging}
             />
             <label htmlFor="remember-password" className="ml-2 block text-sm text-gray-700">
               パスワードを7日間記憶する
@@ -130,10 +168,10 @@ export default function Home() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isAutoLogging}
             className="w-full flex justify-center py-3 sm:py-2 px-4 border border-transparent rounded-md shadow-sm text-base sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'ログイン中...' : 'ログイン'}
+            {isAutoLogging ? '自動ログイン中...' : isLoading ? 'ログイン中...' : 'ログイン'}
           </button>
         </form>
       </div>
