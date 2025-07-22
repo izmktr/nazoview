@@ -26,18 +26,50 @@ function DashboardContent() {
   const [totalItems, setTotalItems] = useState(0);
   const [uniqueFormats, setUniqueFormats] = useState<string[]>([]);
   
-  // フィルター状態
+  // フィルター状態をURLパラメータから初期化
   const [selectedFormat, setSelectedFormat] = useState('');
   const [selectedOrganization, setSelectedOrganization] = useState('');
   const [searchText, setSearchText] = useState('');
   const [contentSearch, setContentSearch] = useState('');
   
-  // 実際に検索に使用する状態（ボタンを押したときのみ更新）
+  // 実際に検索に使用する状態
   const [activeSearchText, setActiveSearchText] = useState('');
   const [activeContentSearch, setActiveContentSearch] = useState('');
   
-  // URLパラメータから初期値を設定するフラグ
+  // 初期化フラグ
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // URLパラメータを更新する関数
+  const updateURL = (filters: any, page: number) => {
+    const params = new URLSearchParams();
+    
+    if (filters.selectedFormat) params.set('format', filters.selectedFormat);
+    if (filters.selectedOrganization) params.set('organization', filters.selectedOrganization);
+    if (filters.activeSearchText) params.set('searchText', filters.activeSearchText);
+    if (filters.activeContentSearch) params.set('contentSearch', filters.activeContentSearch);
+    if (page > 1) params.set('page', page.toString());
+    
+    const queryString = params.toString();
+    const newURL = queryString ? `/dashboard?${queryString}` : '/dashboard';
+    
+    // ブラウザ履歴を更新（リロードなし）
+    window.history.replaceState({}, '', newURL);
+    
+    // セッションストレージにも状態を保存
+    const state = {
+      filters: {
+        selectedFormat: filters.selectedFormat,
+        selectedOrganization: filters.selectedOrganization,
+        activeSearchText: filters.activeSearchText,
+        activeContentSearch: filters.activeContentSearch,
+        searchText: filters.searchText || filters.activeSearchText,
+        contentSearch: filters.contentSearch || filters.activeContentSearch,
+      },
+      currentPage: page,
+      scrollPosition: window.scrollY
+    };
+    sessionStorage.setItem('dashboardState', JSON.stringify(state));
+  };
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -64,23 +96,64 @@ function DashboardContent() {
       setTotalPages(data.totalPages);
       setTotalItems(data.totalItems);
       setUniqueFormats(data.uniqueFormats);
+
+      // URLとセッションストレージを更新
+      updateURL({
+        selectedFormat,
+        selectedOrganization,
+        activeSearchText,
+        activeContentSearch,
+        searchText,
+        contentSearch
+      }, currentPage);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'エラーが発生しました');
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, router]);
+  }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, searchText, contentSearch]);
 
   // 初期化とURLパラメータ処理
   useEffect(() => {
     if (!isInitialized) {
-      const organization = searchParams.get('organization');
-      if (organization) {
-        setSelectedOrganization(decodeURIComponent(organization));
-      }
+      // URLパラメータから初期値を設定
+      const format = searchParams.get('format') || '';
+      const organization = searchParams.get('organization') || '';
+      const searchTextParam = searchParams.get('searchText') || '';
+      const contentSearchParam = searchParams.get('contentSearch') || '';
+      const page = parseInt(searchParams.get('page') || '1');
+
+      setSelectedFormat(format);
+      setSelectedOrganization(organization);
+      setSearchText(searchTextParam);
+      setContentSearch(contentSearchParam);
+      setActiveSearchText(searchTextParam);
+      setActiveContentSearch(contentSearchParam);
+      setCurrentPage(page);
+      
       setIsInitialized(true);
     }
   }, [searchParams, isInitialized]);
+
+  // ページ戻り時のスクロール位置復元
+  useEffect(() => {
+    if (isInitialized && !loading) {
+      const savedState = sessionStorage.getItem('dashboardState');
+      if (savedState) {
+        try {
+          const { scrollPosition } = JSON.parse(savedState);
+          if (scrollPosition) {
+            setTimeout(() => {
+              window.scrollTo(0, scrollPosition);
+            }, 100);
+          }
+        } catch (e) {
+          console.error('Failed to restore scroll position:', e);
+        }
+      }
+    }
+  }, [isInitialized, loading]);
 
   useEffect(() => {
     // 初期化が完了してからデータを取得
@@ -104,6 +177,11 @@ function DashboardContent() {
     setCurrentPage(1);
   };
 
+  const handleOrganizationChange = (organization: string) => {
+    setSelectedOrganization(organization);
+    setCurrentPage(1);
+  };
+
   const handleOrganizationClick = (organization: string) => {
     setSelectedFormat('');
     setSelectedOrganization(organization);
@@ -114,13 +192,52 @@ function DashboardContent() {
     setCurrentPage(1);
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handleReset = () => {
+    setSelectedFormat('');
+    setSelectedOrganization('');
+    setSearchText('');
+    setContentSearch('');
+    setActiveSearchText('');
+    setActiveContentSearch('');
+    setCurrentPage(1);
+    
+    // URLパラメータもクリア
+    window.history.replaceState({}, '', '/dashboard');
+    
+    // セッションストレージもクリア
+    sessionStorage.removeItem('dashboardState');
+  };
+
+  // イベント詳細ページへの遷移（状態保存付き）
+  const navigateToEvent = (eventId: number) => {
+    // 現在の状態をセッションストレージに保存
+    const currentState = {
+      filters: {
+        selectedFormat,
+        selectedOrganization,
+        activeSearchText,
+        activeContentSearch,
+        searchText,
+        contentSearch,
+      },
+      currentPage,
+      scrollPosition: window.scrollY
+    };
+    sessionStorage.setItem('dashboardState', JSON.stringify(currentState));
+    
+    router.push(`/event/${eventId}`);
+  };
+
   const handleLogout = async () => {
+    // セッションストレージをクリア
+    sessionStorage.removeItem('dashboardState');
+    
     // 認証Cookieを削除
     document.cookie = 'authenticated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    
-    // 保存されたパスワードも削除（オプション）
-    // localStorage.removeItem('nazoview_password');
-    // localStorage.removeItem('nazoview_password_expiry');
     
     router.push('/');
   };
@@ -259,17 +376,7 @@ function DashboardContent() {
               {/* リセット */}
               <div className="sm:col-span-2 lg:col-span-1 flex items-end">
                 <button
-                  onClick={() => {
-                    setSelectedFormat('');
-                    setSelectedOrganization('');
-                    setSearchText('');
-                    setContentSearch('');
-                    setActiveSearchText('');
-                    setActiveContentSearch('');
-                    setCurrentPage(1);
-                    // URLパラメータもクリア
-                    router.push('/dashboard');
-                  }}
+                  onClick={handleReset}
                   className="w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 text-base sm:text-sm"
                 >
                   リセット
@@ -312,12 +419,12 @@ function DashboardContent() {
                         {event.participationDate}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <Link
-                          href={`/event/${event.originalIndex ?? index}`}
-                          className="text-sm text-blue-600 hover:text-blue-900 hover:underline"
+                        <button
+                          onClick={() => navigateToEvent(event.originalIndex ?? index)}
+                          className="text-sm text-blue-600 hover:text-blue-900 hover:underline text-left"
                         >
                           {event.title}
-                        </Link>
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
@@ -342,12 +449,12 @@ function DashboardContent() {
                 <div key={index} className="p-4">
                   <div className="space-y-2">
                     <div className="flex justify-between items-start">
-                      <Link
-                        href={`/event/${event.originalIndex ?? index}`}
-                        className="text-blue-600 hover:text-blue-900 hover:underline font-medium text-sm line-clamp-2"
+                      <button
+                        onClick={() => navigateToEvent(event.originalIndex ?? index)}
+                        className="text-blue-600 hover:text-blue-900 hover:underline font-medium text-sm line-clamp-2 text-left"
                       >
                         {event.title}
-                      </Link>
+                      </button>
                       <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
                         {event.participationDate}
                       </span>
@@ -377,14 +484,14 @@ function DashboardContent() {
                   </div>
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
                       disabled={currentPage === 1}
                       className="px-3 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                     >
                       前へ
                     </button>
                     <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
                       disabled={currentPage === totalPages}
                       className="px-3 py-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                     >

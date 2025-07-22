@@ -15,6 +15,7 @@ export default function EventPage({ params }: EventPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [eventId, setEventId] = useState<string>('');
+  const [dashboardReturnURL, setDashboardReturnURL] = useState('/dashboard');
 
   useEffect(() => {
     const initializeParams = async () => {
@@ -22,6 +23,27 @@ export default function EventPage({ params }: EventPageProps) {
       setEventId(resolvedParams.id);
     };
     initializeParams();
+    
+    // セッションストレージからダッシュボードの状態を復元
+    const savedState = sessionStorage.getItem('dashboardState');
+    if (savedState) {
+      try {
+        const { filters, currentPage } = JSON.parse(savedState);
+        const params = new URLSearchParams();
+        
+        if (filters.format) params.set('format', filters.format);
+        if (filters.searchText) params.set('searchText', filters.searchText);
+        if (filters.contentSearch) params.set('contentSearch', filters.contentSearch);
+        if (filters.organization) params.set('organization', filters.organization);
+        if (currentPage > 1) params.set('page', currentPage.toString());
+        
+        const queryString = params.toString();
+        const returnURL = queryString ? `/dashboard?${queryString}` : '/dashboard';
+        setDashboardReturnURL(returnURL);
+      } catch (e) {
+        console.error('Failed to parse saved dashboard state:', e);
+      }
+    }
   }, [params]);
 
   useEffect(() => {
@@ -69,7 +91,7 @@ export default function EventPage({ params }: EventPageProps) {
         <div className="text-center">
           <div className="text-red-600 mb-4">{error}</div>
           <Link
-            href="/dashboard"
+            href={dashboardReturnURL}
             className="text-blue-600 hover:text-blue-800 underline"
           >
             ダッシュボードに戻る
@@ -85,7 +107,7 @@ export default function EventPage({ params }: EventPageProps) {
         <div className="text-center">
           <div className="text-gray-600 mb-4">イベントが見つかりません</div>
           <Link
-            href="/dashboard"
+            href={dashboardReturnURL}
             className="text-blue-600 hover:text-blue-800 underline"
           >
             ダッシュボードに戻る
@@ -104,7 +126,7 @@ export default function EventPage({ params }: EventPageProps) {
               イベント詳細
             </h1>
             <Link
-              href="/dashboard"
+              href={dashboardReturnURL}
               className="text-blue-600 hover:text-blue-800 underline text-sm sm:text-base"
             >
               ← ダッシュボードに戻る
@@ -208,7 +230,7 @@ export default function EventPage({ params }: EventPageProps) {
               <div className="border-t pt-4 sm:pt-6 mt-6 sm:mt-8">
                 <div className="flex justify-center sm:justify-between">
                   <Link
-                    href="/dashboard"
+                    href={dashboardReturnURL}
                     className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     ← 一覧に戻る
