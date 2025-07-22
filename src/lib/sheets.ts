@@ -3,6 +3,36 @@ import { EventData } from '@/types';
 
 const sheets = google.sheets('v4');
 
+// メモリキャッシュ
+interface CacheEntry {
+  data: EventData[];
+  timestamp: number;
+}
+
+let cache: CacheEntry | null = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5分間
+
+// キャッシュからデータを取得する関数
+function getCachedData(): EventData[] | null {
+  if (!cache) return null;
+  
+  const now = Date.now();
+  if (now - cache.timestamp > CACHE_DURATION) {
+    cache = null; // 期限切れのキャッシュをクリア
+    return null;
+  }
+  
+  return cache.data;
+}
+
+// キャッシュにデータを保存する関数
+function setCachedData(data: EventData[]): void {
+  cache = {
+    data: [...data], // ディープコピーを作成
+    timestamp: Date.now()
+  };
+}
+
 // 参加日で降順にソートする関数
 export function sortEventsByDate(events: EventData[]): EventData[] {
   return [...events].sort((a, b) => {
@@ -21,6 +51,15 @@ export function sortEventsByDate(events: EventData[]): EventData[] {
 }
 
 export async function getSheetData(): Promise<EventData[]> {
+  // キャッシュチェック
+  const cachedData = getCachedData();
+  if (cachedData) {
+    console.log('Cache hit: Using cached sheet data');
+    return cachedData;
+  }
+
+  console.log('Cache miss: Fetching fresh sheet data');
+  
   try {
     const response = await sheets.spreadsheets.values.get({
       auth: process.env.GOOGLE_SHEETS_API_KEY,
@@ -49,7 +88,12 @@ export async function getSheetData(): Promise<EventData[]> {
     }));
 
     // 参加日で降順にソート
-    return sortEventsByDate(events);
+    const sortedEvents = sortEventsByDate(events);
+    
+    // キャッシュに保存
+    setCachedData(sortedEvents);
+    
+    return sortedEvents;
   } catch (error) {
     console.error('Error fetching sheet data:', error);
     throw new Error('Failed to fetch sheet data');
@@ -125,6 +169,12 @@ export function filterEvents(events: EventData[], filters: {
 
   // フィルター後も参加日で降順にソート
   return sortEventsByDate(filtered);
+}
+
+// キャッシュを手動でクリアする関数
+export function clearCache(): void {
+  cache = null;
+  console.log('Cache cleared manually');
 }
 
 // 特定の行番号のイベントデータを取得する関数

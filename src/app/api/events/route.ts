@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSheetData, filterEvents, paginateEvents } from '@/lib/sheets';
 import { cookies } from 'next/headers';
 
+// キャッシュ設定
+export const revalidate = 300; // 5分間キャッシュ
+export const dynamic = 'force-dynamic'; // 認証のためdynamic必須
+
 export async function GET(request: NextRequest) {
   try {
     // 認証チェック
