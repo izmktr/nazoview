@@ -127,6 +127,42 @@ export function filterEvents(events: EventData[], filters: {
   return sortEventsByDate(filtered);
 }
 
+// 特定の行番号のイベントデータを取得する関数
+export async function getSingleEventByRowNumber(rowNumber: number): Promise<EventData | null> {
+  try {
+    // rowNumberは0ベース、1行目はヘッダーなので実際のデータ行は rowNumber + 2
+    const actualRowNumber = rowNumber + 2;
+    const range = `A${actualRowNumber}:H${actualRowNumber}`;
+    
+    const response = await sheets.spreadsheets.values.get({
+      auth: process.env.GOOGLE_SHEETS_API_KEY,
+      spreadsheetId: process.env.GOOGLE_SHEET_ID,
+      range: range,
+    });
+
+    const rows = response.data.values;
+    if (!rows || rows.length === 0 || !rows[0]) {
+      return null;
+    }
+
+    const row = rows[0];
+    return {
+      timestamp: row[0] || '',
+      participationDate: row[1] || '',
+      title: row[2] || '',
+      organization: row[3] || '',
+      format: row[4] || '',
+      story: row[5] || '',
+      memorableThings: row[6] || '',
+      finalMystery: row[7] || '',
+      originalIndex: rowNumber, // 元の配列でのインデックスを保存
+    };
+  } catch (error) {
+    console.error('Error fetching single event data:', error);
+    throw new Error('Failed to fetch single event data');
+  }
+}
+
 export function paginateEvents(events: EventData[], page: number = 1, pageSize: number = 30) {
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize;

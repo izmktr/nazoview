@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRawSheetData } from '@/lib/sheets';
-import { EventData } from '@/types';
+import { getSingleEventByRowNumber } from '@/lib/sheets';
 import { cookies } from 'next/headers';
 
 export async function GET(
@@ -29,11 +28,8 @@ export async function GET(
       );
     }
 
-    // Google Sheets からデータ取得（ソート前の元データ）
-    const allEvents = await getRawSheetData();
-    
-    // originalIndexを使ってイベントを検索
-    const event = allEvents.find((event: EventData) => event.originalIndex === eventId);
+    // Google Sheets から特定の行のデータを直接取得
+    const event = await getSingleEventByRowNumber(eventId);
 
     if (!event) {
       return NextResponse.json(
