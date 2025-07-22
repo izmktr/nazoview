@@ -119,7 +119,7 @@ function DashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, searchText, contentSearch, router]);
+  }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, router]);
 
   // 初期化とURLパラメータ処理
   useEffect(() => {
