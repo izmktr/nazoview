@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSingleEventByRowNumber } from '@/lib/sheets';
+import { getSheetData } from '@/lib/sheets';
 import { cookies } from 'next/headers';
 
 export async function GET(
@@ -28,8 +28,11 @@ export async function GET(
       );
     }
 
-    // Google Sheets から特定の行のデータを直接取得
-    const event = await getSingleEventByRowNumber(eventId);
+    // キャッシュから全データを取得（キャッシュヒット時は超高速）
+    const allEvents = await getSheetData();
+    
+    // originalIndexでイベントを検索
+    const event = allEvents.find(event => event.originalIndex === eventId);
 
     if (!event) {
       return NextResponse.json(
@@ -38,7 +41,17 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(event);
+    return new NextResponse(
+      JSON.stringify(event),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          // 個別イベントも短時間キャッシュ
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600'
+        }
+      }
+    );
   } catch (error) {
     console.error('Error fetching event:', error);
     return NextResponse.json(
