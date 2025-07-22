@@ -28,8 +28,10 @@ jobs:
         
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
+        if: github.ref == 'refs/heads/main'
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
           working-directory: ./
+          vercel-args: "--prod"
