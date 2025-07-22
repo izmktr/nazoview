@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { clearCache } from '@/lib/sheets';
 import { cookies } from 'next/headers';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // 認証チェック
     const cookieStore = await cookies();

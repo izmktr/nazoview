@@ -40,7 +40,14 @@ function DashboardContent() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   // URLパラメータを更新する関数
-  const updateURL = (filters: any, page: number) => {
+  const updateURL = (filters: {
+    selectedFormat: string;
+    selectedOrganization: string;
+    activeSearchText: string;
+    activeContentSearch: string;
+    searchText?: string;
+    contentSearch?: string;
+  }, page: number) => {
     const params = new URLSearchParams();
     
     if (filters.selectedFormat) params.set('format', filters.selectedFormat);
@@ -112,7 +119,7 @@ function DashboardContent() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, searchText, contentSearch]);
+  }, [currentPage, selectedFormat, selectedOrganization, activeSearchText, activeContentSearch, searchText, contentSearch, router]);
 
   // 初期化とURLパラメータ処理
   useEffect(() => {
@@ -174,11 +181,6 @@ function DashboardContent() {
 
   const handleFormatChange = (format: string) => {
     setSelectedFormat(format);
-    setCurrentPage(1);
-  };
-
-  const handleOrganizationChange = (organization: string) => {
-    setSelectedOrganization(organization);
     setCurrentPage(1);
   };
 
