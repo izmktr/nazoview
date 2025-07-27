@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { EventData } from '@/types';
 
 interface EventsResponse {
@@ -17,6 +17,13 @@ interface EventsResponse {
 function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // URLを検出する関数
+  const extractUrls = (text: string): string[] => {
+    if (!text) return [];
+    const urlRegex = /https?:\/\/[^\s]+/gi;
+    return text.match(urlRegex) || [];
+  };
   
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -412,69 +419,120 @@ function DashboardContent() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       形式
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      リンク
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {events.map((event, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {event.participationDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => navigateToEvent(event.originalIndex ?? index)}
-                          className="text-sm text-blue-600 hover:text-blue-900 hover:underline text-left"
-                        >
-                          {event.title}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => handleOrganizationClick(event.organization)}
-                          className="text-sm text-green-600 hover:text-green-900 hover:underline"
-                        >
-                          {event.organization}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {event.format}
-                      </td>
-                    </tr>
-                  ))}
+                  {events.map((event, index) => {
+                    const memorableUrls = extractUrls(event.memorableThings || '');
+                    const finalMysteryUrls = extractUrls(event.finalMystery || '');
+                    const allUrls = [...memorableUrls, ...finalMysteryUrls];
+                    
+                    return (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {event.participationDate}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => navigateToEvent(event.originalIndex ?? index)}
+                            className="text-sm text-blue-600 hover:text-blue-900 hover:underline text-left"
+                          >
+                            {event.title}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => handleOrganizationClick(event.organization)}
+                            className="text-sm text-green-600 hover:text-green-900 hover:underline"
+                          >
+                            {event.organization}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {event.format}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {allUrls.length > 0 && (
+                            <div className="flex space-x-2">
+                              {allUrls.map((url, urlIndex) => (
+                                <a
+                                  key={urlIndex}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-900"
+                                  title={url}
+                                >
+                                  <LinkIcon className="h-4 w-4" />
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
 
             {/* モバイル用カードレイアウト */}
             <div className="sm:hidden divide-y divide-gray-200">
-              {events.map((event, index) => (
-                <div key={index} className="p-4">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-start">
-                      <button
-                        onClick={() => navigateToEvent(event.originalIndex ?? index)}
-                        className="text-blue-600 hover:text-blue-900 hover:underline font-medium text-sm line-clamp-2 text-left"
-                      >
-                        {event.title}
-                      </button>
-                      <span className="text-xs text-gray-500 ml-2 flex-shrink-0">
-                        {event.participationDate}
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => handleOrganizationClick(event.organization)}
-                        className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200"
-                      >
-                        {event.organization}
-                      </button>
-                      <span className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
-                        {event.format}
-                      </span>
+              {events.map((event, index) => {
+                const memorableUrls = extractUrls(event.memorableThings || '');
+                const finalMysteryUrls = extractUrls(event.finalMystery || '');
+                const allUrls = [...memorableUrls, ...finalMysteryUrls];
+                
+                return (
+                  <div key={index} className="p-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start">
+                        <button
+                          onClick={() => navigateToEvent(event.originalIndex ?? index)}
+                          className="text-blue-600 hover:text-blue-900 hover:underline font-medium text-sm line-clamp-2 text-left"
+                        >
+                          {event.title}
+                        </button>
+                        <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                          {allUrls.length > 0 && (
+                            <div className="flex space-x-1">
+                              {allUrls.map((url, urlIndex) => (
+                                <a
+                                  key={urlIndex}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-900"
+                                  title={url}
+                                >
+                                  <LinkIcon className="h-4 w-4" />
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          <span className="text-xs text-gray-500">
+                            {event.participationDate}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={() => handleOrganizationClick(event.organization)}
+                          className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200"
+                        >
+                          {event.organization}
+                        </button>
+                        <span className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                          {event.format}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* ページネーション */}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { LinkIcon } from '@heroicons/react/24/outline';
 import { EventData } from '@/types';
 
 interface EventPageProps {
@@ -16,6 +17,13 @@ export default function EventPage({ params }: EventPageProps) {
   const [error, setError] = useState('');
   const [eventId, setEventId] = useState<string>('');
   const [dashboardReturnURL, setDashboardReturnURL] = useState('/dashboard');
+
+  // URLを検出する関数
+  const extractUrls = (text: string): string[] => {
+    if (!text) return [];
+    const urlRegex = /https?:\/\/[^\s]+/gi;
+    return text.match(urlRegex) || [];
+  };
 
   useEffect(() => {
     const initializeParams = async () => {
@@ -141,9 +149,38 @@ export default function EventPage({ params }: EventPageProps) {
             <div className="px-4 sm:px-6 py-6 sm:py-8">
               {/* タイトルと基本情報 */}
               <div className="mb-6 sm:mb-8">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 leading-tight">
-                  {event.title}
-                </h2>
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight flex-1">
+                    {event.title}
+                  </h2>
+                  
+                  {/* URLリンクアイコン */}
+                  {(() => {
+                    const memorableUrls = extractUrls(event.memorableThings || '');
+                    const finalMysteryUrls = extractUrls(event.finalMystery || '');
+                    const allUrls = [...memorableUrls, ...finalMysteryUrls];
+                    
+                    if (allUrls.length > 0) {
+                      return (
+                        <div className="flex space-x-2 flex-shrink-0">
+                          {allUrls.map((url, index) => (
+                            <a
+                              key={index}
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-900 transition-colors"
+                              title={url}
+                            >
+                              <LinkIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </a>
+                          ))}
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
