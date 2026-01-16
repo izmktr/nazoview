@@ -25,6 +25,44 @@ function DashboardContent() {
     return text.match(urlRegex) || [];
   };
   
+  // 団体名をレンダリングする関数（カンマ区切り対応）
+  const renderOrganizations = (organizationText: string) => {
+    const organizations = organizationText.split(',').map(org => org.trim()).filter(org => org.length > 0);
+    
+    if (organizations.length === 0) {
+      return null;
+    }
+    
+    if (organizations.length === 1) {
+      return (
+        <button
+          onClick={() => handleOrganizationClick(organizations[0])}
+          className="text-sm text-green-600 hover:text-green-900 hover:underline"
+        >
+          {organizations[0]}
+        </button>
+      );
+    }
+    
+    return (
+      <div className="flex flex-wrap gap-1 items-center">
+        {organizations.map((org, idx) => (
+          <span key={idx} className="inline-flex items-center">
+            <button
+              onClick={() => handleOrganizationClick(org)}
+              className="text-sm text-green-600 hover:text-green-900 hover:underline"
+            >
+              {org}
+            </button>
+            {idx < organizations.length - 1 && (
+              <span className="text-sm text-gray-400 mx-1">,</span>
+            )}
+          </span>
+        ))}
+      </div>
+    );
+  };
+  
   const [events, setEvents] = useState<EventData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -443,13 +481,8 @@ function DashboardContent() {
                             {event.title}
                           </button>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => handleOrganizationClick(event.organization)}
-                            className="text-sm text-green-600 hover:text-green-900 hover:underline"
-                          >
-                            {event.organization}
-                          </button>
+                        <td className="px-6 py-4">
+                          {renderOrganizations(event.organization)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {event.format}
@@ -519,12 +552,15 @@ function DashboardContent() {
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <button
-                          onClick={() => handleOrganizationClick(event.organization)}
-                          className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200"
-                        >
-                          {event.organization}
-                        </button>
+                        {event.organization.split(',').map(org => org.trim()).filter(org => org.length > 0).map((org, orgIdx) => (
+                          <button
+                            key={orgIdx}
+                            onClick={() => handleOrganizationClick(org)}
+                            className="inline-flex items-center px-2 py-1 text-xs bg-green-100 text-green-700 rounded-full hover:bg-green-200"
+                          >
+                            {org}
+                          </button>
+                        ))}
                         <span className="inline-flex items-center px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
                           {event.format}
                         </span>

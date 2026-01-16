@@ -26,25 +26,31 @@ export async function GET(request: NextRequest) {
     const organizationMap = new Map<string, OrganizationData>();
 
     sheetData.forEach((row) => {
-      const organization = row.organization?.trim();
+      const organizationRaw = row.organization?.trim();
       const format = row.format?.trim();
       
-      if (!organization) return;
+      if (!organizationRaw) return;
 
-      if (!organizationMap.has(organization)) {
-        organizationMap.set(organization, {
-          name: organization,
-          totalEvents: 0,
-          formatCounts: {}
-        });
-      }
+      // カンマで団体名を分割（共同公演の場合）
+      const organizations = organizationRaw.split(',').map(org => org.trim()).filter(org => org.length > 0);
 
-      const orgData = organizationMap.get(organization)!;
-      orgData.totalEvents++;
+      // 各団体の公演数をカウント
+      organizations.forEach((organization) => {
+        if (!organizationMap.has(organization)) {
+          organizationMap.set(organization, {
+            name: organization,
+            totalEvents: 0,
+            formatCounts: {}
+          });
+        }
 
-      if (format) {
-        orgData.formatCounts[format] = (orgData.formatCounts[format] || 0) + 1;
-      }
+        const orgData = organizationMap.get(organization)!;
+        orgData.totalEvents++;
+
+        if (format) {
+          orgData.formatCounts[format] = (orgData.formatCounts[format] || 0) + 1;
+        }
+      });
     });
 
     // MapをArrayに変換
