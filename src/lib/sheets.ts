@@ -147,10 +147,11 @@ export function filterEvents(events: EventData[], filters: {
   }
 
   if (filters.organization) {
+    const targetOrg = filters.organization;
     filtered = filtered.filter(event => {
       // カンマ区切りの団体名を分割して、いずれかが一致すればtrue
       const organizations = event.organization.split(',').map(org => org.trim());
-      return organizations.includes(filters.organization);
+      return organizations.includes(targetOrg);
     });
   }
 
